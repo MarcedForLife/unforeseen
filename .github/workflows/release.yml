@@ -1,0 +1,86 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version bump"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  release:
+    name: Bump, Build & Release
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: i686-pc-windows-msvc, x86_64-pc-windows-msvc
+          components: clippy, rustfmt
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Validate
+        run: |
+          cargo fmt --all -- --check
+          cargo clippy --release -- -D warnings
+          cargo clippy --release --target x86_64-pc-windows-msvc -- -D warnings
+
+      - name: Bump version
+        id: bump
+        shell: bash
+        run: |
+          current=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
+          IFS='.' read -r major minor patch <<< "$current"
+
+          case "${{ inputs.bump }}" in
+            major) major=$((major + 1)); minor=0; patch=0 ;;
+            minor) minor=$((minor + 1)); patch=0 ;;
+            patch) patch=$((patch + 1)) ;;
+          esac
+
+          new="${major}.${minor}.${patch}"
+          echo "version=${new}" >> "$GITHUB_OUTPUT"
+          echo "Bumping ${current} -> ${new}"
+
+          sed -i "s/^version = \"${current}\"/version = \"${new}\"/" Cargo.toml
+
+      - name: Build
+        run: |
+          cargo build --release
+          cargo build --release --target x86_64-pc-windows-msvc
+
+      - name: Commit and tag
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Cargo.toml Cargo.lock
+          git commit -m "v${{ steps.bump.outputs.version }}"
+          git tag "v${{ steps.bump.outputs.version }}"
+          git push origin HEAD --tags
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          version="${{ steps.bump.outputs.version }}"
+          cp target/i686-pc-windows-msvc/release/unforeseen.dll unforeseen-x86.dll
+          cp target/x86_64-pc-windows-msvc/release/unforeseen.dll unforeseen-x64.dll
+          gh release create "v${version}" \
+            --title "v${version}" \
+            --generate-notes \
+            unforeseen-x86.dll \
+            unforeseen-x64.dll
