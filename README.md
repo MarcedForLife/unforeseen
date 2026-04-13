@@ -14,11 +14,11 @@ Loads automatically via a `version.dll` proxy in the game's `bin` directory.
 
 Tested on the HL2 20th Anniversary edition. Should work on other Source 1 titles that share the same achievement architecture:
 
-- Half-Life 2 (app 220)
-- Half-Life 2: Episode One (app 380)
-- Half-Life 2: Episode Two (app 420)
-- Half-Life 2: Lost Coast (app 340)
-- Portal 2 (app 620)
+- Half-Life 2, Episode One, Episode Two, Lost Coast (20th Anniversary)
+- Portal
+- Portal 2
+- Left 4 Dead
+- Left 4 Dead 2
 
 Currently, only Windows is supported and tested, but Linux support via `LD_PRELOAD` should be straightforward to add.
 
@@ -30,10 +30,13 @@ irm https://raw.githubusercontent.com/MarcedForLife/unforeseen/main/install.ps1 
 
 Or manually: copy the DLL as `version.dll` into the game's `bin` directory:
 
-| Game                         | Copy to                             |
-| ---------------------------- | ----------------------------------- |
-| HL2 / EP1 / EP2 / Lost Coast | `Half-Life 2\bin\version.dll`       |
-| Portal 2                     | `Portal 2\bin\version.dll`          |
+| Game                      | Copy to                          |
+| ------------------------- | -------------------------------- |
+| Half-Life 2 (20th Anniv.) | `Half-Life 2\bin\version.dll`    |
+| Portal                    | `Portal\bin\version.dll`         |
+| Portal 2                  | `Portal 2\bin\version.dll`       |
+| Left 4 Dead               | `Left 4 Dead\bin\version.dll`    |
+| Left 4 Dead 2             | `Left 4 Dead 2\bin\version.dll`  |
 
 To uninstall, delete `version.dll` from that directory.
 
