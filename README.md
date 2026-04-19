@@ -8,7 +8,7 @@ Source engine games block achievements during commentary playthroughs. The check
 
 This DLL scans the server module at runtime, locates the commentary check helper (anchored on the `"Achievements disabled"` debug string), and stubs it to always return true. No other guards are touched (sv_cheats, multiplayer checks etc. remain intact).
 
-Loads automatically via a `version.dll` proxy in the game's `bin` directory.
+Loads automatically as a `tier0.dll` proxy in the game's `bin` directory. The installer reads the game's real `tier0.dll`, backs it up as `tier0_real.dll`, and appends an export-forwarding section to a template DLL so every call to `tier0` passes through our `DllMain` and then on to the real module. Compatible with DXVK and SpecialK (unlike a `version.dll` proxy, which Windows resolves from `System32` because it's a KnownDLL).
 
 ## Supported games
 
@@ -28,17 +28,9 @@ Currently, only Windows is supported and tested, but Linux support via `LD_PRELO
 irm https://raw.githubusercontent.com/MarcedForLife/unforeseen/main/install.ps1 | iex
 ```
 
-Or manually: copy the DLL as `version.dll` into the game's `bin` directory:
+The installer handles Steam library discovery, the `tier0.dll` backup, and the proxy generation for every selected game.
 
-| Game                      | Copy to                          |
-| ------------------------- | -------------------------------- |
-| Half-Life 2 (20th Anniv.) | `Half-Life 2\bin\version.dll`    |
-| Portal                    | `Portal\bin\version.dll`         |
-| Portal 2                  | `Portal 2\bin\version.dll`       |
-| Left 4 Dead               | `Left 4 Dead\bin\version.dll`    |
-| Left 4 Dead 2             | `Left 4 Dead 2\bin\version.dll`  |
-
-To uninstall, delete `version.dll` from that directory.
+To uninstall, delete `bin/tier0.dll` and rename `bin/tier0_real.dll` back to `tier0.dll`.
 
 ## Building
 

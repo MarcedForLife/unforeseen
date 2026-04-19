@@ -7,7 +7,6 @@ mod patcher;
 mod pe;
 mod platform;
 mod scanner;
-mod version_proxy;
 
 fn run() {
     if let Err(msg) = run_inner() {
